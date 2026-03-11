@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#27A694">
+  <meta name="theme-color" content="#0a0a0a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Projecten">
   <link rel="manifest" href="manifest-ipad.json">
   <link rel="apple-touch-icon" href="icon.svg">
@@ -17,22 +17,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* Primary colors from Figma */
       --teal: #27A694;
-      --olive: #A1A685;
+      --olive: #7a7d63;
       --purple: #8088E7;
       --sky-blue: #75D6FF;
       --dark-blue: #276C8A;
-
-      /* Functional colors */
       --accent: var(--teal);
-      --fg: #000000;
+      --fg: #f0ece4;
       --fg-secondary: var(--olive);
-      --fg-dim: rgba(0,0,0,0.5);
-      --bg: #FFFFFF;
-      --surface: #FFFFFF;
-      --border: rgba(0,0,0,0.08);
-      --transition: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+      --fg-dim: rgba(240,236,228,0.5);
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: rgba(255,255,255,0.1);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -50,7 +46,6 @@
       -webkit-user-select: none;
     }
 
-    /* ── Layout ───────────────────────────────────────── */
     #app {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -58,13 +53,12 @@
       height: 100dvh;
     }
 
-    /* ── Header ───────────────────────────────────────── */
     header {
       padding: calc(var(--safe-top) + 24px) 36px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--olive);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       background: var(--bg);
       position: relative;
       z-index: 10;
@@ -86,32 +80,23 @@
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: var(--dark-blue);
-      background: var(--sky-blue);
+      color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.1);
       padding: 10px 20px;
       border-radius: 50px;
-      transition: all 400ms ease;
     }
 
     #conn-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--dark-blue);
-      transition: background 400ms ease;
-      animation: pulse 2s ease infinite;
+      background: rgba(255,255,255,0.5);
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+    #connection-badge.connected { background: rgba(100,200,120,0.2); color: rgba(100,200,120,0.9); }
+    #connection-badge.connected #conn-dot { background: rgba(100,200,120,0.9); }
+    #connection-badge.disconnected { background: rgba(220,80,80,0.2); color: rgba(220,80,80,0.9); }
+    #connection-badge.disconnected #conn-dot { background: rgba(220,80,80,0.9); }
 
-    #connection-badge.connected { background: #A1E8AF; color: #1a5c2a; }
-    #connection-badge.connected #conn-dot { background: #1a5c2a; animation: none; }
-    #connection-badge.disconnected { background: #FFB3B3; color: #8B0000; }
-    #connection-badge.disconnected #conn-dot { background: #8B0000; animation: none; }
-
-    /* ── Main project grid ────────────────────────────── */
     #main {
       overflow-y: auto;
       padding: 36px;
@@ -131,17 +116,6 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       position: relative;
-      opacity: 0;
-      -webkit-transform: translateY(20px);
-      transform: translateY(20px);
-      -webkit-transition: opacity 0.3s ease, -webkit-transform 0.3s ease, border-color 0.2s ease, background 0.2s ease;
-      transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .project-card.visible {
-      opacity: 1;
-      -webkit-transform: translateY(0);
-      transform: translateY(0);
     }
 
     .project-card::before {
@@ -153,22 +127,15 @@
       height: 4px;
       background: var(--card-accent, var(--teal));
       opacity: 0;
-      -webkit-transition: opacity 0.2s ease;
-      transition: opacity 0.2s ease;
     }
 
     .project-card.active {
       border-color: var(--card-accent, var(--teal));
-      background: rgba(39, 166, 148, 0.05);
+      background: rgba(39, 166, 148, 0.1);
     }
 
     .project-card.active::before {
       opacity: 1;
-    }
-
-    .project-card.tap {
-      -webkit-transform: scale(0.96);
-      transform: scale(0.96);
     }
 
     .project-card-title {
@@ -198,7 +165,7 @@
 
     .project-card-description {
       padding-top: 14px;
-      border-top: 1px solid var(--olive);
+      border-top: 1px solid rgba(255,255,255,0.1);
       font-size: 15px;
       font-weight: 400;
       line-height: 1.5;
@@ -208,8 +175,6 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
-
   </style>
 </head>
 <body>
@@ -224,39 +189,29 @@
   </header>
 
   <div id="main">
-    <div id="projects-grid">
-      <!-- Project cards injected by JS -->
-    </div>
+    <div id="projects-grid"></div>
   </div>
 </div>
 
 <script>
-  // ── State ────────────────────────────────────────────────────────────
   let projects = [];
   let currentIndex = -1;
   let ws = null;
   let wsRetryTimer = null;
 
-  // ── Load projects ─────────────────────────────────────────────────────
   async function loadProjects() {
     try {
       const r = await fetch('/projects.json');
       projects = await r.json();
     } catch(e) {
-      projects = generateDemoProjects();
+      projects = [
+        { id:0, title:'Demo Project 1', student:'Student A', keywords:['demo'], description:'Demo project.', video:'', color:'#27A694' },
+        { id:1, title:'Demo Project 2', student:'Student B', keywords:['demo'], description:'Demo project.', video:'', color:'#8088E7' },
+      ];
     }
     buildGrid();
   }
 
-  function generateDemoProjects() {
-    return [
-      { id:0, title:'Creative Coding', student:'Femke De Latter', keywords:['GSAP', 'ml5.js', 'scrollytelling'], description:'Design and develop an interactive desktop application that brings a personal story to life.', video:'', color:'#27A694' },
-      { id:1, title:'Creative Coding', student:'Femke Denoo', keywords:['scrollytelling'], description:'Design and develop an interactive desktop application combining machine learning and animation.', video:'', color:'#27A694' },
-      { id:2, title:'Creative Coding', student:'Naomi Desmet', keywords:['GSAP', 'ml5.js'], description:'Bring a personal story, experience or theme to life. Think in terms of experience.', video:'', color:'#8088E7' },
-    ];
-  }
-
-  // ── Build grid ────────────────────────────────────────────────────────
   function buildGrid() {
     const grid = document.getElementById('projects-grid');
     grid.innerHTML = '';
@@ -267,7 +222,6 @@
       card.id = `project-${i}`;
       card.style.setProperty('--card-accent', p.color || '#27A694');
 
-      // Format keywords
       const keywords = (p.keywords || []).join(' · ');
 
       card.innerHTML = `
@@ -277,31 +231,19 @@
         <div class="project-card-description">${p.description || ''}</div>
       `;
 
-      // Tap animation
-      card.addEventListener('touchstart', () => card.classList.add('tap'), { passive: true });
-      card.addEventListener('touchend', () => card.classList.remove('tap'), { passive: true });
-      card.addEventListener('touchcancel', () => card.classList.remove('tap'), { passive: true });
-
       card.addEventListener('click', () => selectProject(i));
       grid.appendChild(card);
-
-      // Staggered fade in
-      setTimeout(() => card.classList.add('visible'), 50 + i * 80);
     });
   }
 
-  // ── Select project ────────────────────────────────────────────────────
   function selectProject(index) {
     if (index < 0 || index >= projects.length) return;
     currentIndex = index;
-    const p = projects[index];
 
-    // Update active state
     document.querySelectorAll('.project-card').forEach((card, i) => {
       card.classList.toggle('active', i === index);
     });
 
-    // Send to display
     if (ws && ws.readyState === 1) {
       ws.send(JSON.stringify({
         type: 'navigate',
@@ -312,12 +254,21 @@
     }
   }
 
-  // ── WebSocket ─────────────────────────────────────────────────────────
   function connectWS() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${protocol}//${location.host}`);
+    const wsUrl = `${protocol}//${location.host}`;
+    console.log('Connecting to:', wsUrl);
+
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch(e) {
+      console.error('WebSocket create error:', e);
+      updateConnBadge('disconnected', 'Error');
+      return;
+    }
 
     ws.addEventListener('open', () => {
+      console.log('WebSocket open');
       updateConnBadge('connected', 'Live');
       ws.send(JSON.stringify({ type: 'register', role: 'ipad' }));
       clearTimeout(wsRetryTimer);
@@ -326,6 +277,7 @@
     ws.addEventListener('message', (evt) => {
       try {
         const msg = JSON.parse(evt.data);
+        console.log('Message:', msg);
         if (msg.type === 'state' && msg.currentProject !== currentIndex) {
           currentIndex = msg.currentProject;
           document.querySelectorAll('.project-card').forEach((card, i) => {
@@ -335,12 +287,16 @@
       } catch(e) {}
     });
 
-    ws.addEventListener('close', () => {
+    ws.addEventListener('close', (e) => {
+      console.log('WebSocket closed:', e.code, e.reason);
       updateConnBadge('disconnected', 'Offline');
       wsRetryTimer = setTimeout(connectWS, 3000);
     });
 
-    ws.addEventListener('error', () => ws.close());
+    ws.addEventListener('error', (e) => {
+      console.error('WebSocket error:', e);
+      ws.close();
+    });
   }
 
   function updateConnBadge(state, label) {
@@ -350,10 +306,16 @@
     lbl.textContent = label.toUpperCase();
   }
 
-  // ── Init ──────────────────────────────────────────────────────────────
   loadProjects().then(() => connectWS());
 
-  // Wake lock for iPad
+  // Debug logging on badge click
+  document.getElementById('connection-badge').addEventListener('click', () => {
+    const wsState = ws ? ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'][ws.readyState] : 'NULL';
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${location.host}`;
+    alert(`WebSocket: ${wsState}\nURL: ${wsUrl}\nProjects: ${projects.length}`);
+  });
+
   if ('wakeLock' in navigator) {
     navigator.wakeLock.request('screen').catch(() => {});
     document.addEventListener('visibilitychange', () => {
@@ -363,7 +325,6 @@
     });
   }
 
-  // Register service worker for PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw-ipad.js').catch(() => {});
   }
