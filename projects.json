@@ -35,5 +35,18 @@
     "description": "Design and develop an interactive desktop application that brings a personal story, experience or theme to life by combining machine learning and animation. Think in terms of experience. Examples of approaches: memories, emotions, identity, growth, etc. ",
     "video": "videos/desmetnaomi_54168_5702833_CC3_desmetNaomi_preview.mp4",
     "color": "#7BA87B"
+  },
+  {
+    "id": 3,
+    "title": "Liquid Simulator",
+    "student": "Wouter Verweirder",
+    "keywords": [
+      "GSAP",
+      "ml5.js",
+      "scrollytelling"
+    ],
+    "description": "Liquid simulator using custom shaders. The liquid is interactive and reacts to the mouse movement. The colors of the liquid are based on the colors of the background image.",
+    "video": "videos/liquid-simulator.mp4",
+    "color": "#C8A96E"
   }
 ]
