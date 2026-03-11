@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest-display.json">
   <title>Display</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Montserrat:wght@200;300;400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,153 +18,27 @@
       --accent: #C8A96E;
       --fg: #f0ece4;
       --bg: #0a0a0a;
-      --transition: 800ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     html, body {
       width: 100%; height: 100%;
       background: var(--bg);
       overflow: hidden;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
     }
 
-    /* ── Video layer ─────────────────────────── */
     #video-wrap {
       position: fixed;
       inset: 0;
       z-index: 1;
     }
 
-    .video-slot {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity var(--transition);
-    }
-
-    .video-slot.active { opacity: 1; }
-
-    .video-slot video {
+    #video-wrap video {
       width: 100%; height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
     }
 
-    /* ── Cinematic vignette + gradient ──────── */
-    #vignette {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      background:
-        radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%),
-        linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.35) 100%);
-      pointer-events: none;
-    }
-
-    /* ── Overlay info ────────────────────────── */
-    #overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 56px 72px;
-      pointer-events: none;
-    }
-
-    .project-meta {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 600ms ease 200ms, transform 600ms ease 200ms;
-      max-width: 600px;
-    }
-
-    .project-meta.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .project-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300;
-      font-size: clamp(40px, 5vw, 72px);
-      line-height: 1;
-      color: var(--fg);
-      letter-spacing: -0.01em;
-      margin-bottom: 16px;
-    }
-
-    .project-description {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 200;
-      font-size: clamp(14px, 1.4vw, 18px);
-      line-height: 1.6;
-      color: rgba(240,236,228,0.6);
-    }
-
-    /* ── Progress bar ────────────────────────── */
-    #progress {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 4;
-      height: 2px;
-      background: rgba(255,255,255,0.08);
-    }
-
-    #progress-fill {
-      height: 100%;
-      background: var(--accent);
-      transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
-      width: 0%;
-    }
-
-    /* ── Project counter (top right) ─────────── */
-    #counter {
-      position: fixed;
-      top: 40px;
-      right: 56px;
-      z-index: 4;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 200;
-      font-size: 11px;
-      letter-spacing: 0.2em;
-      color: rgba(240,236,228,0.35);
-      opacity: 0;
-      transition: opacity 600ms ease;
-    }
-
-    #counter.visible { opacity: 1; }
-
-    /* ── Logo (top left) ─────────────────────── */
-    #logo {
-      position: fixed;
-      top: 40px;
-      left: 56px;
-      z-index: 4;
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300;
-      font-size: 18px;
-      letter-spacing: 0.15em;
-      color: rgba(240,236,228,0.4);
-    }
-
-    /* ── Transition wipe ─────────────────────── */
-    #wipe {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      background: var(--bg);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 300ms ease;
-    }
-
-    #wipe.flash { opacity: 0.6; }
-
-    /* ── No-video placeholder ────────────────── */
     .video-placeholder {
       position: absolute;
       inset: 0;
@@ -185,14 +59,95 @@
       fill: var(--fg);
     }
 
-    /* ── Connection indicator ────────────────── */
+    #vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      background:
+        radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%),
+        linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.35) 100%);
+      pointer-events: none;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 56px 72px;
+      pointer-events: none;
+    }
+
+    .project-meta {
+      max-width: 600px;
+    }
+
+    .project-title {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 700;
+      font-size: clamp(40px, 5vw, 72px);
+      line-height: 1;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+
+    .project-student {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 400;
+      font-size: clamp(16px, 1.6vw, 22px);
+      color: rgba(240,236,228,0.6);
+    }
+
+    #progress {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 4;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    #progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+    }
+
+    #counter {
+      position: fixed;
+      top: 40px;
+      right: 56px;
+      z-index: 4;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(240,236,228,0.35);
+    }
+
+    #logo {
+      position: fixed;
+      top: 40px;
+      left: 56px;
+      z-index: 4;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.15em;
+      color: rgba(240,236,228,0.4);
+    }
+
     #conn {
       position: fixed;
       top: 40px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 20;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 9px;
       letter-spacing: 0.3em;
       text-transform: uppercase;
@@ -201,7 +156,6 @@
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       color: rgba(255,255,255,0.4);
-      transition: opacity 600ms ease;
     }
 
     #conn.connected { color: rgba(100, 200, 120, 0.7); border-color: rgba(100,200,120,0.2); }
@@ -211,18 +165,12 @@
 </head>
 <body>
 
-  <div id="wipe"></div>
-
-  <!-- Video containers (A/B for crossfade) -->
   <div id="video-wrap">
-    <div class="video-slot active" id="slot-a">
-      <div class="video-placeholder">
-        <div class="placeholder-inner">
-          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </div>
+    <div class="video-placeholder">
+      <div class="placeholder-inner">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
       </div>
     </div>
-    <div class="video-slot" id="slot-b"></div>
   </div>
 
   <div id="vignette"></div>
@@ -230,7 +178,7 @@
   <div id="overlay">
     <div class="project-meta" id="project-meta">
       <div class="project-title" id="meta-title">—</div>
-      <div class="project-description" id="meta-description">—</div>
+      <div class="project-student" id="meta-student"></div>
     </div>
   </div>
 
@@ -240,82 +188,56 @@
   <div id="conn">Verbinden…</div>
 
 <script>
-  // ── State ──────────────────────────────────────────────────────────────
   let projects = [];
   let currentIndex = 0;
-  let activeSlot = 'a';
+  let currentVideo = null;
   let ws = null;
   let wsRetryTimer = null;
 
-  const slotA = document.getElementById('slot-a');
-  const slotB = document.getElementById('slot-b');
-  const wipe  = document.getElementById('wipe');
-  const conn  = document.getElementById('conn');
+  const videoWrap = document.getElementById('video-wrap');
+  const conn = document.getElementById('conn');
+  const progressFill = document.getElementById('progress-fill');
 
-  function getSlot(name) { return name === 'a' ? slotA : slotB; }
-  function getInactive() { return activeSlot === 'a' ? 'b' : 'a'; }
-
-  // ── Load projects ──────────────────────────────────────────────────────
   async function loadProjects() {
     try {
       const r = await fetch('/projects.json');
       projects = await r.json();
     } catch(e) {
-      console.warn('projects.json not found, using demo data');
-      projects = generateDemoProjects();
+      projects = [
+        { id:0, title:'Project 1', student:'Student A', video:'', color:'#C8A96E' },
+        { id:1, title:'Project 2', student:'Student B', video:'', color:'#7BA3C4' },
+      ];
     }
-    renderProject(currentIndex, false);
+    renderProject(currentIndex);
   }
 
-  function generateDemoProjects() {
-    return [
-      { id:0, title:'Project 1', description:'Beschrijving van de eerste opdracht.', video:'', color:'#C8A96E' },
-      { id:1, title:'Project 2', description:'Beschrijving van de tweede opdracht.', video:'', color:'#7BA3C4' },
-      { id:2, title:'Project 3', description:'Beschrijving van de derde opdracht.', video:'', color:'#7BA87B' },
-    ];
-  }
-
-  // ── Render project ─────────────────────────────────────────────────────
-  function renderProject(index, animate = true) {
+  function renderProject(index) {
     if (!projects.length) return;
     currentIndex = index;
     const p = projects[index];
 
-    // Update meta
     document.getElementById('meta-title').textContent = p.title || '—';
-    document.getElementById('meta-description').textContent = p.description || '';
+    document.getElementById('meta-student').textContent = p.student ? `by ${p.student}` : '';
 
-    // Accent color
     document.documentElement.style.setProperty('--accent', p.color || '#C8A96E');
 
-    // Progress
-    const fill = document.getElementById('progress-fill');
-    fill.style.width = ((index + 1) / projects.length * 100) + '%';
-
-    // Counter
     const counter = document.getElementById('counter');
     counter.textContent = String(index + 1).padStart(2,'0') + ' / ' + String(projects.length).padStart(2,'0');
-    counter.classList.add('visible');
 
-    // Video crossfade
-    loadVideo(p.video || '', p.color, animate);
+    loadVideo(p.video || '', p.color);
+  }
 
-    // Animate meta in
-    const meta = document.getElementById('project-meta');
-    if (animate) {
-      meta.classList.remove('visible');
-      setTimeout(() => meta.classList.add('visible'), 400);
-    } else {
-      meta.classList.add('visible');
+  function updateProgress() {
+    if (currentVideo && currentVideo.duration) {
+      const pct = (currentVideo.currentTime / currentVideo.duration) * 100;
+      progressFill.style.width = pct + '%';
     }
   }
 
-  // ── Video loader with A/B crossfade ───────────────────────────────────
-  function loadVideo(src, accentColor, animate) {
-    const nextSlotName = animate ? getInactive() : activeSlot;
-    const nextSlot = getSlot(nextSlotName);
-
-    nextSlot.innerHTML = '';
+  function loadVideo(src, accentColor) {
+    videoWrap.innerHTML = '';
+    currentVideo = null;
+    progressFill.style.width = '0%';
 
     if (src) {
       const video = document.createElement('video');
@@ -325,34 +247,24 @@
       video.muted = true;
       video.playsInline = true;
       video.preload = 'auto';
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.objectFit = 'cover';
-      video.style.display = 'block';
-      nextSlot.appendChild(video);
+      videoWrap.appendChild(video);
       video.play().catch(() => {});
-    } else {
-      // Colored gradient placeholder
-      const ph = document.createElement('div');
-      ph.style.cssText = `
-        position:absolute; inset:0;
-        background: linear-gradient(135deg,
-          ${hexToRgb(accentColor, 0.08)} 0%,
-          #0f0f0f 50%,
-          ${hexToRgb(accentColor, 0.04)} 100%);
-      `;
-      nextSlot.appendChild(ph);
-    }
 
-    if (animate) {
-      // Flash + crossfade
-      wipe.classList.add('flash');
-      setTimeout(() => {
-        getSlot(activeSlot).classList.remove('active');
-        nextSlot.classList.add('active');
-        activeSlot = nextSlotName;
-        setTimeout(() => wipe.classList.remove('flash'), 50);
-      }, 250);
+      currentVideo = video;
+      video.addEventListener('timeupdate', updateProgress);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'video-placeholder';
+      ph.innerHTML = `
+        <div class="placeholder-inner">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      `;
+      ph.style.background = `linear-gradient(135deg,
+        ${hexToRgb(accentColor, 0.08)} 0%,
+        #0f0f0f 50%,
+        ${hexToRgb(accentColor, 0.04)} 100%)`;
+      videoWrap.appendChild(ph);
     }
   }
 
@@ -363,7 +275,6 @@
     return `rgba(${r},${g},${b},${alpha})`;
   }
 
-  // ── WebSocket ──────────────────────────────────────────────────────────
   function connectWS() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${location.host}`);
@@ -379,16 +290,14 @@
     ws.addEventListener('message', (evt) => {
       try {
         const msg = JSON.parse(evt.data);
-        if (msg.type === 'state') {
-          if (msg.currentProject !== currentIndex) {
-            renderProject(msg.currentProject, true);
-          }
+        if (msg.type === 'state' && msg.currentProject !== currentIndex) {
+          renderProject(msg.currentProject);
         }
       } catch(e) {}
     });
 
     ws.addEventListener('close', () => {
-      conn.textContent = 'Verbinding verbroken — herverbinden…';
+      conn.textContent = 'Verbinding verbroken';
       conn.className = 'disconnected';
       conn.classList.remove('hidden');
       wsRetryTimer = setTimeout(connectWS, 3000);
@@ -397,10 +306,8 @@
     ws.addEventListener('error', () => ws.close());
   }
 
-  // ── Init ───────────────────────────────────────────────────────────────
   loadProjects().then(() => connectWS());
 
-  // Prevent sleep on display screens
   if ('wakeLock' in navigator) {
     async function requestWakeLock() {
       try { await navigator.wakeLock.request('screen'); } catch(e) {}
