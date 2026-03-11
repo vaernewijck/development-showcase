@@ -13,6 +13,9 @@ npm-debug.log*
 # Videos (large files - add separately or use Git LFS)
 videos/
 
+# Private data (student info)
+projects.json
+
 # IDE
 .idea/
 .vscode/
