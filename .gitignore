@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+npm-debug.log*
+
+# Videos (large files - add separately or use Git LFS)
+videos/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Claude
+.claude/
