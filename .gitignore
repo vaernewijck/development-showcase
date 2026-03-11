@@ -14,7 +14,7 @@ npm-debug.log*
 videos/
 
 # Private data (student info)
-projects.json
+data/
 
 # IDE
 .idea/

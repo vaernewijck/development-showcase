@@ -2,6 +2,17 @@
 
 Two-screen setup: a display showing project videos and an iPad to control it. Synced via WebSockets.
 
+## Structure
+
+```
+├── public/          # Client files (html, js, icons)
+├── data/            # Project data (not in repo)
+├── videos/          # Video files (not in repo)
+├── server.js        # Node.js server
+├── start.command    # Double-click to start on Mac
+└── package.json
+```
+
 ## Setup
 
 ```bash
@@ -9,19 +20,15 @@ npm install
 npm start
 ```
 
-Then open:
-- Display: `http://<your-ip>:3000/display.html`
-- iPad: `http://<your-ip>:3000/ipad.html`
+Or double-click `start.command` on Mac.
 
-Both devices need to be on the same WiFi network.
+## Private files (via AirDrop)
 
-## Private files (not in repo)
+- `data/projects.json` — project data
+- `videos/` — video files
 
-You'll receive these via AirDrop:
-- `projects.json` — put in root folder
-- `videos/` folder — put in root folder
+## URLs
 
-## Install as PWA
-
-- Display (Chrome): Menu → Add to home screen
-- iPad (Safari): Share → Add to home screen
+- Setup: `http://localhost:3000/setup.html`
+- Display: `http://<ip>:3000/display.html`
+- iPad: `http://<ip>:3000/ipad.html`

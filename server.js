@@ -4,6 +4,8 @@ const path = require('path');
 const os = require('os');
 const { WebSocketServer } = require('ws');
 
+const PORT = process.env.PORT || 3000;
+
 function getLocalIP() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
@@ -16,8 +18,6 @@ function getLocalIP() {
   }
   return 'localhost';
 }
-
-const PORT = process.env.PORT || 3000;
 
 let state = {
   currentProject: 0,
@@ -46,7 +46,18 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  let filePath = path.join(__dirname, req.url === '/' ? '/display.html' : req.url);
+  // Route to correct folder
+  let filePath;
+  if (req.url === '/') {
+    filePath = path.join(__dirname, 'public', 'display.html');
+  } else if (req.url === '/projects.json') {
+    filePath = path.join(__dirname, 'data', 'projects.json');
+  } else if (req.url.startsWith('/videos/')) {
+    filePath = path.join(__dirname, req.url);
+  } else {
+    filePath = path.join(__dirname, 'public', req.url);
+  }
+
   const ext = path.extname(filePath).toLowerCase();
 
   // Video streaming with range requests
