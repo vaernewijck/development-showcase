@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    h1 { font-size: 24px; margin-bottom: 32px; }
+    .cards { display: flex; gap: 24px; flex-wrap: wrap; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card h2 { font-size: 18px; margin-bottom: 16px; }
+    .card img { display: block; margin: 0 auto 16px; width: 200px; height: 200px; background: #eee; }
+    .card code {
+      display: block;
+      background: #f0f0f0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+    .card a {
+      display: inline-block;
+      background: #007AFF;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .card a:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scan QR code om te verbinden</h1>
+  <div class="cards">
+    <div class="card">
+      <h2>iPad Controller</h2>
+      <img id="qr-ipad" alt="QR iPad">
+      <code id="url-ipad">Laden...</code>
+      <a id="link-ipad" href="#" target="_blank">Open</a>
+    </div>
+    <div class="card">
+      <h2>Display</h2>
+      <img id="qr-display" alt="QR Display">
+      <code id="url-display">Laden...</code>
+      <a id="link-display" href="#" target="_blank">Open</a>
+    </div>
+  </div>
+
+  <script>
+    fetch('/api/ip')
+      .then(r => r.json())
+      .then(data => {
+        const base = `http://${data.ip}:${data.port}`;
+        const ipadUrl = `${base}/ipad.html`;
+        const displayUrl = `${base}/display.html`;
+
+        document.getElementById('url-ipad').textContent = ipadUrl;
+        document.getElementById('url-display').textContent = displayUrl;
+
+        document.getElementById('qr-ipad').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ipadUrl)}`;
+        document.getElementById('qr-display').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(displayUrl)}`;
+
+        document.getElementById('link-ipad').href = ipadUrl;
+        document.getElementById('link-display').href = displayUrl;
+      });
+  </script>
+</body>
+</html>

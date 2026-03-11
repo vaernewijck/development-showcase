@@ -1,17 +1,29 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { WebSocketServer } = require('ws');
+
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      const isIPv4 = iface.family === 'IPv4' || iface.family === 4;
+      if (isIPv4 && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 const PORT = process.env.PORT || 3000;
 
-// ─── State ───────────────────────────────────────────────────────────────────
 let state = {
   currentProject: 0,
-  totalProjects: 0, // filled by projects.json
+  totalProjects: 0,
 };
 
-// ─── MIME types ───────────────────────────────────────────────────────────────
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js':   'application/javascript',
@@ -26,37 +38,44 @@ const MIME = {
   '.webp': 'image/webp',
 };
 
-// ─── HTTP server ──────────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
-  let filePath = path.join(__dirname, req.url === '/' ? '/display.html' : req.url);
+  // API endpoint for local IP
+  if (req.url === '/api/ip') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ip: getLocalIP(), port: PORT }));
+    return;
+  }
 
-  // Handle range requests for video streaming
+  let filePath = path.join(__dirname, req.url === '/' ? '/display.html' : req.url);
   const ext = path.extname(filePath).toLowerCase();
+
+  // Video streaming with range requests
   if (['.mp4', '.webm'].includes(ext)) {
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
-      res.end('Video not found: ' + req.url);
+      res.end('Video not found');
       return;
     }
     const stat = fs.statSync(filePath);
     const fileSize = stat.size;
     const range = req.headers.range;
+
     if (range) {
       const parts = range.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
       const chunksize = end - start + 1;
       const file = fs.createReadStream(filePath, { start, end });
-      const head = {
+      res.writeHead(206, {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunksize,
-        'Content-Type': MIME[ext] || 'application/octet-stream',
-      };
-      res.writeHead(206, head);
+        'Content-Type': MIME[ext],
+      });
       file.pipe(res);
       return;
     }
+
     res.writeHead(200, {
       'Content-Length': fileSize,
       'Content-Type': MIME[ext],
@@ -69,7 +88,7 @@ const server = http.createServer((req, res) => {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.writeHead(404);
-      res.end('Not found: ' + req.url);
+      res.end('Not found');
       return;
     }
     res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
@@ -77,18 +96,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// ─── WebSocket server ─────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server });
 const clients = new Set();
-
-function broadcast(data, exclude = null) {
-  const msg = JSON.stringify(data);
-  for (const client of clients) {
-    if (client !== exclude && client.readyState === 1) {
-      client.send(msg);
-    }
-  }
-}
 
 function broadcastAll(data) {
   const msg = JSON.stringify(data);
@@ -101,7 +110,6 @@ wss.on('connection', (ws) => {
   clients.add(ws);
   console.log(`Client connected. Total: ${clients.size}`);
 
-  // Send current state to newly connected client
   ws.send(JSON.stringify({ type: 'state', ...state }));
 
   ws.on('message', (raw) => {
@@ -113,16 +121,9 @@ wss.on('connection', (ws) => {
         console.log(`Registered as: ${msg.role}`);
       }
 
-      if (msg.type === 'navigate') {
-        const { direction, total } = msg;
-        state.totalProjects = total;
-        if (direction === 'next') {
-          state.currentProject = (state.currentProject + 1) % total;
-        } else if (direction === 'prev') {
-          state.currentProject = (state.currentProject - 1 + total) % total;
-        } else if (direction === 'goto') {
-          state.currentProject = Math.max(0, Math.min(msg.index, total - 1));
-        }
+      if (msg.type === 'navigate' && msg.direction === 'goto') {
+        state.totalProjects = msg.total;
+        state.currentProject = Math.max(0, Math.min(msg.index, msg.total - 1));
         broadcastAll({ type: 'state', ...state });
       }
     } catch (e) {
@@ -137,8 +138,7 @@ wss.on('connection', (ws) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🚀 Server running at http://localhost:${PORT}`);
-  console.log(`   Display : http://localhost:${PORT}/display.html`);
-  console.log(`   iPad    : http://localhost:${PORT}/ipad.html`);
-  console.log(`   (replace localhost with your local IP for cross-device use)\n`);
+  const ip = getLocalIP();
+  console.log(`Server running at http://${ip}:${PORT}`);
+  console.log(`Setup: http://localhost:${PORT}/setup.html`);
 });
