@@ -1,9 +1,13 @@
 let currentAssignment = null;
+let currentStudentIndex = -1;
+let numStudents = 0;
 let displayOffset = 0;
 let currentVideo = null;
 let activeLayer = 'a';
 let ws = null;
 let wsRetryTimer = null;
+let videoFailureTimer = null;
+const VIDEO_FAILURE_TIMEOUT_MS = 15000; // Fallback if video fails to load/play
 
 // DOM elements
 const layerA = document.getElementById('layer-a');
@@ -17,7 +21,7 @@ const params = new URLSearchParams(location.search);
 if (params.has('offset')) {
   displayOffset = parseInt(params.get('offset')) || 0;
 } else {
-  displayOffset = Math.floor(Math.random() * 100);
+  displayOffset = 0;
 }
 
 // Master display controls autoplay timing
@@ -40,9 +44,11 @@ async function loadInitialData() {
   }
 }
 
-function showAssignment(assignment, studentIndex) {
+function showAssignment(assignment, studentIndex, isDuplicate = false) {
   currentAssignment = assignment;
   const students = assignment.students || [];
+  currentStudentIndex = studentIndex;
+  numStudents = students.length;
 
   meta.classList.remove('visible');
 
@@ -53,7 +59,7 @@ function showAssignment(assignment, studentIndex) {
       document.getElementById('counter').textContent = '';
       meta.classList.add('visible');
     }, 300);
-    loadVideo('');
+    loadMedia('', false);
     return;
   }
 
@@ -67,7 +73,7 @@ function showAssignment(assignment, studentIndex) {
     meta.classList.add('visible');
   }, 300);
 
-  loadVideo(student.video || '');
+  loadMedia(student.video || '', isDuplicate);
 }
 
 function updateProgress() {
@@ -77,12 +83,42 @@ function updateProgress() {
   }
 }
 
-function loadVideo(src) {
+function isImageFile(src) {
+  return /\.(png|jpg|jpeg|webp|gif)$/i.test(src);
+}
+
+function loadMedia(src, isDuplicate = false) {
   const currentLayer = activeLayer === 'a' ? layerA : layerB;
   const nextLayer = activeLayer === 'a' ? layerB : layerA;
 
+  // Clear any pending failure timer
+  clearTimeout(videoFailureTimer);
+
   nextLayer.innerHTML = '';
   progressFill.style.width = '0%';
+
+  if (src && isImageFile(src)) {
+    // Handle image
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+    nextLayer.appendChild(img);
+    currentVideo = null;
+
+    // Master advances after 10 seconds for images
+    if (isMaster) {
+      setTimeout(() => {
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify({ type: 'videoEnded' }));
+        }
+      }, 10000);
+    }
+
+    currentLayer.classList.remove('active');
+    nextLayer.classList.add('active');
+    activeLayer = activeLayer === 'a' ? 'b' : 'a';
+    return;
+  }
 
   if (src) {
     const video = document.createElement('video');
@@ -93,16 +129,66 @@ function loadVideo(src) {
     video.preload = 'auto';
     video.loop = false;
 
-    video.addEventListener('ended', () => {
+    let hasEnded = false;
+
+    const handleVideoEnd = () => {
+      if (hasEnded) return;
+      hasEnded = true;
+      clearTimeout(videoFailureTimer);
+
       console.log('Video ended, isMaster:', isMaster, 'ws ready:', ws?.readyState === 1);
       if (isMaster && ws && ws.readyState === 1) {
         console.log('Sending videoEnded to server');
         ws.send(JSON.stringify({ type: 'videoEnded' }));
+      } else if (!isMaster) {
+        // Non-master: loop the video
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        hasEnded = false; // Allow end to trigger again
       }
+    };
+
+    video.addEventListener('ended', handleVideoEnd);
+
+    // Error handling: if video fails, trigger end after timeout
+    video.addEventListener('error', (e) => {
+      console.error('Video error:', e);
+      videoFailureTimer = setTimeout(handleVideoEnd, 3000);
+    });
+
+    video.addEventListener('stalled', () => {
+      console.warn('Video stalled');
+      videoFailureTimer = setTimeout(handleVideoEnd, VIDEO_FAILURE_TIMEOUT_MS);
+    });
+
+    // Fallback timeout in case video never plays or ends
+    videoFailureTimer = setTimeout(() => {
+      if (!hasEnded) {
+        console.warn('Video timeout, triggering end');
+        handleVideoEnd();
+      }
+    }, VIDEO_FAILURE_TIMEOUT_MS);
+
+    // Clear timeout once video is playing successfully
+    video.addEventListener('playing', () => {
+      clearTimeout(videoFailureTimer);
     });
 
     nextLayer.appendChild(video);
-    video.play().catch(() => {});
+
+    // For duplicate videos (more displays than videos), start at random position
+    if (isDuplicate) {
+      video.addEventListener('loadedmetadata', () => {
+        const randomOffset = Math.random() * video.duration * 0.8; // Start within first 80%
+        video.currentTime = randomOffset;
+        console.log('Duplicate video starting at:', randomOffset.toFixed(1), 's');
+      }, { once: true });
+    }
+
+    video.play().catch((err) => {
+      console.error('Play failed:', err);
+      videoFailureTimer = setTimeout(handleVideoEnd, 3000);
+    });
 
     currentVideo = video;
     video.addEventListener('timeupdate', updateProgress);
@@ -134,7 +220,7 @@ function connectWS() {
   ws.addEventListener('open', () => {
     conn.textContent = 'Verbonden';
     conn.className = 'connected';
-    ws.send(JSON.stringify({ type: 'register', role: 'display', offset: displayOffset }));
+    ws.send(JSON.stringify({ type: 'register', role: 'display', offset: displayOffset, isMaster: isMaster }));
     setTimeout(() => conn.classList.add('hidden'), 3000);
     clearTimeout(wsRetryTimer);
   });
@@ -144,9 +230,12 @@ function connectWS() {
       const msg = JSON.parse(evt.data);
       if (msg.type === 'state' && msg.assignment) {
         const studentIndex = typeof msg.studentIndex === 'number' ? msg.studentIndex : -1;
-        showAssignment(msg.assignment, studentIndex);
+        const isDuplicate = msg.isDuplicate || false;
+        showAssignment(msg.assignment, studentIndex, isDuplicate);
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error('WebSocket message error:', e);
+    }
   });
 
   ws.addEventListener('close', () => {

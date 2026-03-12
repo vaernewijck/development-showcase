@@ -4,6 +4,8 @@ let currentMode = 'overview';
 let ws = null;
 let wsRetryTimer = null;
 let autoplayActive = false;
+let videoEndedCooldown = false;
+const VIDEO_ENDED_COOLDOWN_MS = 2000; // Prevent rapid-fire advances
 
 async function loadProjects() {
   try {
@@ -127,13 +129,17 @@ function connectWS() {
         updateDetailView();
       }
       if (msg.type === 'videoEnded') {
-        console.log('Received videoEnded, autoplayActive:', autoplayActive);
-        if (autoplayActive) {
+        console.log('Received videoEnded, autoplayActive:', autoplayActive, 'cooldown:', videoEndedCooldown);
+        if (autoplayActive && !videoEndedCooldown && assignments.length > 0) {
+          videoEndedCooldown = true;
+          setTimeout(() => { videoEndedCooldown = false; }, VIDEO_ENDED_COOLDOWN_MS);
           const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
           selectProject(next);
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('WebSocket message error:', e);
+    }
   });
 
   ws.addEventListener('close', () => {

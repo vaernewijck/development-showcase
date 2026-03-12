@@ -25,8 +25,11 @@ let state = {
   assignmentVisitCount: {},  // tracks rotation per assignment
 };
 
-// Track displays with their offset
-const displays = new Map(); // ws -> { offset: number }
+// Track displays with their offset and master status
+const displays = new Map(); // ws -> { offset: number, isMaster: boolean }
+let masterDisplay = null; // Track the single master display
+let videoEndedCooldown = false;
+const VIDEO_ENDED_COOLDOWN_MS = 2000;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -129,21 +132,25 @@ function sendToDisplays(assignment, assignmentIndex) {
   const students = assignment.students || [];
   const numStudents = students.length;
   const visitCount = state.assignmentVisitCount[assignmentIndex] || 0;
+  const numDisplays = displays.size;
 
   for (const [ws, displayInfo] of displays) {
     if (ws.readyState !== 1) continue;
 
     let studentIndex;
+    let isDuplicate = false;
+
     if (numStudents === 0) {
       studentIndex = -1; // no students, show placeholder
     } else {
       // Calculate which student this display should show
-      const baseIndex = (displayInfo.offset + visitCount) % numStudents;
-      // If more displays than students, extra displays get -1 (placeholder)
-      if (displayInfo.offset >= numStudents) {
-        studentIndex = -1;
-      } else {
-        studentIndex = baseIndex;
+      // All displays get a valid student (wrapping around if needed)
+      studentIndex = (displayInfo.offset + visitCount) % numStudents;
+
+      // Mark as duplicate if more displays than students
+      // (this display is showing the same video as another)
+      if (numDisplays > numStudents && displayInfo.offset >= numStudents) {
+        isDuplicate = true;
       }
     }
 
@@ -151,7 +158,8 @@ function sendToDisplays(assignment, assignmentIndex) {
       type: 'state',
       currentProject: assignmentIndex,
       studentIndex: studentIndex,
-      assignment: assignment
+      assignment: assignment,
+      isDuplicate: isDuplicate
     }));
   }
 }
@@ -168,29 +176,44 @@ wss.on('connection', (ws) => {
         ws.role = msg.role;
         console.log(`Registered as: ${msg.role}`);
 
-        // Track displays with their offset
+        // Track displays with their offset and master status
         if (msg.role === 'display' && typeof msg.offset === 'number') {
-          displays.set(ws, { offset: msg.offset });
-          console.log(`Display registered with offset: ${msg.offset}`);
+          const isMaster = msg.isMaster || false;
+          displays.set(ws, { offset: msg.offset, isMaster: isMaster });
+
+          // Track the master display (first one wins)
+          if (isMaster && !masterDisplay) {
+            masterDisplay = ws;
+            console.log(`Master display registered with offset: ${msg.offset}`);
+          } else {
+            console.log(`Display registered with offset: ${msg.offset}`);
+          }
 
           // Send current state to this display
           if (state.assignment) {
             const students = state.assignment.students || [];
             const numStudents = students.length;
             const visitCount = state.assignmentVisitCount[state.currentProject] || 0;
+            const numDisplays = displays.size;
 
             let studentIndex;
-            if (numStudents === 0 || msg.offset >= numStudents) {
+            let isDuplicate = false;
+
+            if (numStudents === 0) {
               studentIndex = -1;
             } else {
               studentIndex = (msg.offset + visitCount) % numStudents;
+              if (numDisplays > numStudents && msg.offset >= numStudents) {
+                isDuplicate = true;
+              }
             }
 
             ws.send(JSON.stringify({
               type: 'state',
               currentProject: state.currentProject,
               studentIndex: studentIndex,
-              assignment: state.assignment
+              assignment: state.assignment,
+              isDuplicate: isDuplicate
             }));
           }
         }
@@ -223,9 +246,24 @@ wss.on('connection', (ws) => {
         }
       }
 
-      // Forward videoEnded from master display to controller controllers
+      // Forward videoEnded from master display to controllers (with debouncing)
       if (msg.type === 'videoEnded') {
-        console.log('Received videoEnded from display');
+        // Only accept from the registered master display
+        if (ws !== masterDisplay) {
+          console.log('Ignoring videoEnded from non-master display');
+          return;
+        }
+
+        // Debounce to prevent rapid-fire advances
+        if (videoEndedCooldown) {
+          console.log('Ignoring videoEnded (cooldown active)');
+          return;
+        }
+
+        videoEndedCooldown = true;
+        setTimeout(() => { videoEndedCooldown = false; }, VIDEO_ENDED_COOLDOWN_MS);
+
+        console.log('Received videoEnded from master display');
         let controllerCount = 0;
         for (const client of clients) {
           if (client.role === 'controller' && client.readyState === 1) {
@@ -243,6 +281,22 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     clients.delete(ws);
     displays.delete(ws);
+
+    // Clear master if it disconnected
+    if (ws === masterDisplay) {
+      masterDisplay = null;
+      console.log('Master display disconnected');
+
+      // Promote another master if available
+      for (const [displayWs, info] of displays) {
+        if (info.isMaster && displayWs.readyState === 1) {
+          masterDisplay = displayWs;
+          console.log('Promoted new master display');
+          break;
+        }
+      }
+    }
+
     console.log(`Client disconnected. Total: ${clients.size}`);
   });
 });
