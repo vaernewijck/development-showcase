@@ -25,6 +25,35 @@ let state = {
   assignmentVisitCount: {},  // tracks rotation per assignment
 };
 
+// Cache projects data for preloading calculations
+let projectsData = null;
+function loadProjectsData() {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'data', 'projects.json'), 'utf8');
+    projectsData = JSON.parse(data);
+  } catch (e) {
+    console.error('Failed to load projects.json:', e.message);
+    projectsData = { assignments: [] };
+  }
+}
+loadProjectsData();
+
+// Calculate next video URL for preloading
+function getNextVideoUrl(currentAssignmentIndex, displayOffset) {
+  if (!projectsData || !projectsData.assignments) return null;
+
+  const nextIndex = (currentAssignmentIndex + 1) % projectsData.assignments.length;
+  const nextAssignment = projectsData.assignments[nextIndex];
+  if (!nextAssignment || !nextAssignment.students || nextAssignment.students.length === 0) return null;
+
+  // Use visitCount for next assignment (it will be 0 if not visited yet)
+  const visitCount = state.assignmentVisitCount[nextIndex] || 0;
+  const studentIndex = (displayOffset + visitCount) % nextAssignment.students.length;
+  const student = nextAssignment.students[studentIndex];
+
+  return student && student.video ? student.video : null;
+}
+
 // Track displays with their offset and master status
 const displays = new Map(); // ws -> { offset: number, isMaster: boolean }
 let masterDisplay = null; // Track the single master display
@@ -154,12 +183,16 @@ function sendToDisplays(assignment, assignmentIndex) {
       }
     }
 
+    // Calculate next video for preloading
+    const nextVideoUrl = getNextVideoUrl(assignmentIndex, displayInfo.offset);
+
     ws.send(JSON.stringify({
       type: 'state',
       currentProject: assignmentIndex,
       studentIndex: studentIndex,
       assignment: assignment,
-      isDuplicate: isDuplicate
+      isDuplicate: isDuplicate,
+      nextVideoUrl: nextVideoUrl
     }));
   }
 }
@@ -208,12 +241,16 @@ wss.on('connection', (ws) => {
               }
             }
 
+            // Calculate next video for preloading
+            const nextVideoUrl = getNextVideoUrl(state.currentProject, msg.offset);
+
             ws.send(JSON.stringify({
               type: 'state',
               currentProject: state.currentProject,
               studentIndex: studentIndex,
               assignment: state.assignment,
-              isDuplicate: isDuplicate
+              isDuplicate: isDuplicate,
+              nextVideoUrl: nextVideoUrl
             }));
           }
         }

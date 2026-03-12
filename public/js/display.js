@@ -9,6 +9,10 @@ let wsRetryTimer = null;
 let videoFailureTimer = null;
 const VIDEO_FAILURE_TIMEOUT_MS = 15000; // Fallback if video fails to load/play
 
+// Preloading
+let preloadedVideo = null;
+let preloadedVideoUrl = null;
+
 // DOM elements
 const layerA = document.getElementById('layer-a');
 const layerB = document.getElementById('layer-b');
@@ -83,6 +87,29 @@ function updateProgress() {
   }
 }
 
+// Preload the next video in the background
+function preloadVideo(url) {
+  if (!url || isImageFile(url)) return;
+  if (preloadedVideoUrl === url) return; // Already preloading this one
+
+  // Clean up previous preload
+  if (preloadedVideo) {
+    preloadedVideo.src = '';
+    preloadedVideo.load();
+    preloadedVideo = null;
+  }
+
+  preloadedVideoUrl = url;
+  preloadedVideo = document.createElement('video');
+  preloadedVideo.preload = 'auto';
+  preloadedVideo.muted = true;
+  preloadedVideo.src = url;
+
+  // Start loading
+  preloadedVideo.load();
+  console.log('Preloading next video:', url);
+}
+
 function isImageFile(src) {
   return /\.(png|jpg|jpeg|webp|gif)$/i.test(src);
 }
@@ -121,12 +148,23 @@ function loadMedia(src, isDuplicate = false) {
   }
 
   if (src) {
-    const video = document.createElement('video');
-    video.src = src;
+    let video;
+
+    // Use preloaded video if available
+    if (preloadedVideo && preloadedVideoUrl === src) {
+      console.log('Using preloaded video:', src);
+      video = preloadedVideo;
+      preloadedVideo = null;
+      preloadedVideoUrl = null;
+    } else {
+      video = document.createElement('video');
+      video.src = src;
+      video.preload = 'auto';
+    }
+
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
-    video.preload = 'auto';
     video.loop = false;
 
     let hasEnded = false;
@@ -232,6 +270,11 @@ function connectWS() {
         const studentIndex = typeof msg.studentIndex === 'number' ? msg.studentIndex : -1;
         const isDuplicate = msg.isDuplicate || false;
         showAssignment(msg.assignment, studentIndex, isDuplicate);
+
+        // Preload next video if provided
+        if (msg.nextVideoUrl) {
+          preloadVideo(msg.nextVideoUrl);
+        }
       }
     } catch(e) {
       console.error('WebSocket message error:', e);
