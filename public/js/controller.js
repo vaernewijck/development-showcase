@@ -32,10 +32,17 @@ function buildGrid() {
     card.className = 'project-card';
 
     const keywords = (a.keywords || []).join(' · ');
-    card.innerHTML = `
-      <div class="project-card-title">${a.name || ''}</div>
-      <div class="project-card-keywords">${keywords}</div>
-    `;
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'project-card-title';
+    titleDiv.textContent = a.name || '';
+
+    const keywordsDiv = document.createElement('div');
+    keywordsDiv.className = 'project-card-keywords';
+    keywordsDiv.textContent = keywords;
+
+    card.appendChild(titleDiv);
+    card.appendChild(keywordsDiv);
 
     card.addEventListener('click', () => selectProject(i, true));
     grid.appendChild(card);
