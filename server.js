@@ -60,7 +60,7 @@ const server = http.createServer((req, res) => {
   } else if (urlPath === '/projects.json') {
     filePath = path.join(__dirname, 'data', 'projects.json');
   } else if (urlPath.startsWith('/videos/')) {
-    filePath = path.join(__dirname, urlPath);
+    filePath = path.join(__dirname, 'data', urlPath);
   } else {
     filePath = path.join(__dirname, 'public', urlPath);
   }
@@ -225,11 +225,15 @@ wss.on('connection', (ws) => {
 
       // Forward videoEnded from master display to iPad controllers
       if (msg.type === 'videoEnded') {
+        console.log('Received videoEnded from display');
+        let iPadCount = 0;
         for (const client of clients) {
           if (client.role === 'ipad' && client.readyState === 1) {
             client.send(JSON.stringify({ type: 'videoEnded' }));
+            iPadCount++;
           }
         }
+        console.log(`Forwarded videoEnded to ${iPadCount} iPad(s)`);
       }
     } catch (e) {
       console.error('Parse error:', e.message);
