@@ -539,9 +539,12 @@
             updateDetailView();
           }
           // Master display video ended - advance to next project
-          if (msg.type === 'videoEnded' && autoplayActive) {
-            const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
-            selectProject(next);
+          if (msg.type === 'videoEnded') {
+            console.log('Received videoEnded, autoplayActive:', autoplayActive);
+            if (autoplayActive) {
+              const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
+              selectProject(next);
+            }
           }
         } catch (e) { }
       });

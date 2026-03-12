@@ -285,7 +285,9 @@
       // Master display notifies iPad when video ends
       video.loop = false;
       video.addEventListener('ended', () => {
+        console.log('Video ended, isMaster:', isMaster, 'ws ready:', ws?.readyState === 1);
         if (isMaster && ws && ws.readyState === 1) {
+          console.log('Sending videoEnded to server');
           ws.send(JSON.stringify({ type: 'videoEnded' }));
         }
       });
