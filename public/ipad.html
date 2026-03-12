@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -10,26 +11,33 @@
   <link rel="manifest" href="manifest-ipad.json">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <title>Projecten</title>
+  <title>Showcase</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&display=swap');
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --teal: #27A694;
-      --olive: #7a7d63;
-      --fg: #f0ece4;
-      --fg-dim: rgba(240,236,228,0.5);
-      --bg: #0a0a0a;
-      --surface: #141414;
-      --border: rgba(255,255,255,0.1);
+      --accent: #ffffff;
+      --fg: #ffffff;
+      --fg-dim: rgba(255, 255, 255, 0.5);
+      --bg: #000000;
+      --surface: #111111;
+      --border: rgba(255, 255, 255, 0.15);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    html, body {
-      width: 100%; height: 100%;
+    html,
+    body {
+      width: 100%;
+      height: 100%;
       background: var(--bg);
       overflow: hidden;
       font-family: 'IBM Plex Sans', sans-serif;
@@ -42,7 +50,7 @@
 
     #app {
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto 1fr auto;
       height: 100%;
       height: 100dvh;
     }
@@ -59,66 +67,48 @@
     }
 
     .logo {
-      font-weight: 700;
-      font-size: 28px;
-      color: var(--teal);
-    }
-
-    .header-right {
       display: flex;
       align-items: center;
-      gap: 12px;
     }
 
-    /* Mode toggle */
-    #mode-toggle {
+    .logo img {
+      height: 32px;
+      width: auto;
+      filter: invert(1);
+    }
+
+    /* Autoplay toggle */
+    .autoplay-toggle {
       display: flex;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 4px;
-    }
-
-    .mode-btn {
-      padding: 8px 16px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.08);
       border: none;
-      background: transparent;
+      border-radius: 12px;
       color: var(--fg-dim);
       font-family: inherit;
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
-      border-radius: 6px;
+      transition: background 0.15s ease, color 0.15s ease;
     }
 
-    .mode-btn.active {
-      background: var(--teal);
-      color: var(--bg);
+    .autoplay-toggle:active {
+      background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Connection badge */
-    #connection-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
-      background: rgba(255,255,255,0.1);
-      padding: 10px 20px;
-      border-radius: 50px;
+    .autoplay-toggle.active {
+      background: rgba(100, 200, 120, 0.2);
+      color: rgba(100, 200, 120, 1);
     }
 
-    #conn-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.5);
+    .autoplay-toggle svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
     }
-
-    #connection-badge.connected { background: rgba(100,200,120,0.2); color: rgba(100,200,120,0.9); }
-    #connection-badge.connected #conn-dot { background: rgba(100,200,120,0.9); }
-    #connection-badge.disconnected { background: rgba(220,80,80,0.2); color: rgba(220,80,80,0.9); }
-    #connection-badge.disconnected #conn-dot { background: rgba(220,80,80,0.9); }
 
     /* Main content */
     #main {
@@ -129,388 +119,464 @@
     /* Overview mode - Grid */
     #projects-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
     }
 
     .project-card {
       background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 4px;
-      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      position: relative;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
     }
 
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: var(--card-accent, var(--teal));
-      opacity: 0;
+    .project-card:active {
+      transform: scale(0.98);
     }
 
     .project-card.active {
-      border-color: var(--card-accent, var(--teal));
-      background: rgba(39, 166, 148, 0.1);
-    }
-
-    .project-card.active::before {
-      opacity: 1;
+      border-color: var(--fg);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .project-card-title {
-      font-weight: 700;
-      font-size: 20px;
-      line-height: 1.2;
-      color: var(--card-accent, var(--teal));
+      font-weight: 600;
+      font-size: 17px;
+      line-height: 1.35;
+      color: var(--fg);
       margin-bottom: 6px;
     }
 
-    .project-card-student {
-      font-size: 14px;
+    .project-card-keywords {
+      font-size: 12px;
       color: var(--fg-dim);
+      line-height: 1.4;
     }
 
-    /* Detail mode */
+    /* Detail mode - Full screen */
     #detail-view {
       display: none;
-      height: 100%;
-      padding: 20px;
-    }
-
-    #detail-view.active {
-      display: flex;
       flex-direction: column;
+      height: 100%;
     }
 
-    .detail-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      padding: 48px;
+    .detail-content {
       flex: 1;
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .detail-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 6px;
-      background: var(--card-accent, var(--teal));
+      justify-content: center;
+      padding: 48px;
+      overflow-y: auto;
     }
 
     .detail-title {
       font-weight: 700;
-      font-size: 48px;
+      font-size: clamp(36px, 7vw, 60px);
       line-height: 1.1;
-      color: var(--card-accent, var(--teal));
-      margin-bottom: 12px;
-    }
-
-    .detail-student {
-      font-size: 24px;
-      color: var(--fg-dim);
-      margin-bottom: 32px;
+      color: var(--fg);
+      margin-bottom: 20px;
     }
 
     .detail-keywords {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
-      color: var(--olive);
+      color: var(--fg-dim);
       text-transform: uppercase;
-      margin-bottom: 24px;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
     }
 
     .detail-description {
-      font-size: 20px;
+      font-size: clamp(16px, 2.5vw, 22px);
       line-height: 1.6;
-      color: var(--fg);
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
-      flex: 1;
+      color: rgba(255,255,255,0.8);
+      max-width: 700px;
+      margin-bottom: 32px;
     }
 
-    .detail-footer {
+    .detail-year {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: auto;
+    }
+
+    /* Shared footer */
+    #app-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 16px;
-      gap: 16px;
+      padding: 16px 24px calc(var(--safe-bottom) + 16px);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
     }
 
-    .detail-nav {
+    .footer-left,
+    .footer-right {
       display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-center {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* Nav arrows */
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s ease;
+    }
+
+    .nav-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--fg);
+    }
+
+    /* Mode button */
+    .mode-btn {
+      padding: 12px 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s ease;
+    }
+
+    .mode-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Status indicator */
+    .status-indicator {
+      display: flex;
+      align-items: center;
       gap: 8px;
-    }
-
-    .detail-nav button {
-      padding: 10px 20px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--fg-dim);
-      font-family: inherit;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
       font-size: 13px;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .detail-nav button:active {
-      background: rgba(255,255,255,0.1);
-    }
-
-    .detail-counter {
-      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       color: var(--fg-dim);
     }
 
-    .detail-logo {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--fg-dim);
-      letter-spacing: 0.1em;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--fg-dim);
     }
 
-    .back-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      padding: 8px 16px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--fg-dim);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-      z-index: 10;
+    .status-indicator.connected {
+      color: rgba(100, 200, 120, 0.9);
     }
 
-    /* Hide grid in detail mode */
+    .status-indicator.connected .status-dot {
+      background: rgba(100, 200, 120, 0.9);
+    }
+
+    .status-indicator.disconnected {
+      color: rgba(220, 80, 80, 0.9);
+    }
+
+    .status-indicator.disconnected .status-dot {
+      background: rgba(220, 80, 80, 0.9);
+    }
+
+    /* Detail mode */
+    body.detail-mode #app {
+      grid-template-rows: 1fr auto;
+    }
     body.detail-mode #projects-grid { display: none; }
-    body.detail-mode #detail-view { display: flex; }
     body.detail-mode header { display: none; }
-    body.detail-mode #main { padding: calc(var(--safe-top) + 20px) 20px 20px; }
+    body.detail-mode #main {
+      padding: 0;
+      overflow: hidden;
+    }
+    body.detail-mode #detail-view {
+      display: flex;
+      height: 100%;
+    }
+    body.detail-mode .detail-content {
+      padding-top: calc(var(--safe-top) + 48px);
+    }
   </style>
 </head>
+
 <body>
 
-<div id="app">
-  <header>
-    <div class="logo">Projecten</div>
-    <div class="header-right">
-      <div id="mode-toggle">
-        <button class="mode-btn active" data-mode="overview">Overzicht</button>
-        <button class="mode-btn" data-mode="detail">Detail</button>
+  <div id="app">
+    <header>
+      <div class="logo">
+        <img src="logo.png" alt="Devine">
       </div>
-      <div id="connection-badge" class="connecting">
-        <div id="conn-dot"></div>
-        <span id="conn-label">VERBINDEN</span>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <div id="main">
-    <div id="projects-grid"></div>
-    <div id="detail-view">
-      <button class="back-btn" id="back-btn">Overzicht</button>
-      <div class="detail-card" id="detail-card">
-        <div class="detail-title" id="detail-title">—</div>
-        <div class="detail-student" id="detail-student"></div>
-        <div class="detail-keywords" id="detail-keywords"></div>
-        <div class="detail-description" id="detail-description"></div>
-      </div>
-      <div class="detail-footer">
-        <div class="detail-logo">DEVINE</div>
-        <div class="detail-counter" id="detail-counter">1 / 10</div>
-        <div class="detail-nav">
-          <button id="prev-btn">←</button>
-          <button id="next-btn">→</button>
+    <div id="main">
+      <div id="projects-grid"></div>
+      <div id="detail-view">
+        <div class="detail-content">
+          <div class="detail-title" id="detail-title">—</div>
+          <div class="detail-keywords" id="detail-keywords"></div>
+          <div class="detail-description" id="detail-description"></div>
+          <div class="detail-year" id="detail-year"></div>
         </div>
       </div>
     </div>
+
+    <footer id="app-footer">
+      <div class="footer-left">
+        <button class="mode-btn" id="mode-btn">Detail</button>
+      </div>
+      <div class="footer-center">
+        <button class="nav-btn" id="prev-btn">
+          <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button class="nav-btn" id="next-btn">
+          <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+        </button>
+      </div>
+      <div class="footer-right">
+        <button id="autoplay-btn" class="autoplay-toggle">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Auto
+        </button>
+        <div class="status-indicator" id="status-indicator">
+          <div class="status-dot"></div>
+          <span id="status-label">Offline</span>
+        </div>
+      </div>
+    </footer>
   </div>
-</div>
 
-<script>
-  let projects = [];
-  let currentIndex = -1;
-  let currentMode = 'overview';
-  let ws = null;
-  let wsRetryTimer = null;
+  <script>
+    let assignments = [];
+    let currentIndex = -1;
+    let currentMode = 'overview';
+    let ws = null;
+    let wsRetryTimer = null;
+    let autoplayActive = false;
 
-  async function loadProjects() {
-    try {
-      const r = await fetch('/projects.json');
-      projects = await r.json();
-    } catch(e) {
-      projects = [
-        { id:0, title:'Demo Project 1', student:'Student A', keywords:['demo'], description:'Demo project beschrijving hier.', video:'', color:'#27A694' },
-        { id:1, title:'Demo Project 2', student:'Student B', keywords:['demo'], description:'Demo project beschrijving hier.', video:'', color:'#8088E7' },
-      ];
-    }
-    buildGrid();
-    if (projects.length > 0 && currentIndex === -1) {
-      currentIndex = 0;
-      updateDetailView();
-    }
-  }
-
-  function buildGrid() {
-    const grid = document.getElementById('projects-grid');
-    grid.innerHTML = '';
-
-    projects.forEach((p, i) => {
-      const card = document.createElement('div');
-      card.className = 'project-card';
-      card.style.setProperty('--card-accent', p.color || '#27A694');
-
-      card.innerHTML = `
-        <div class="project-card-title">${p.title || ''}</div>
-        ${p.student ? `<div class="project-card-student">by ${p.student}</div>` : ''}
-      `;
-
-      card.addEventListener('click', () => selectProject(i));
-      grid.appendChild(card);
-    });
-
-    updateActiveCard();
-  }
-
-  function updateActiveCard() {
-    document.querySelectorAll('.project-card').forEach((card, i) => {
-      card.classList.toggle('active', i === currentIndex);
-    });
-  }
-
-  function updateDetailView() {
-    if (currentIndex < 0 || currentIndex >= projects.length) return;
-    const p = projects[currentIndex];
-
-    document.getElementById('detail-title').textContent = p.title || '—';
-    document.getElementById('detail-student').textContent = p.student ? `by ${p.student}` : '';
-    document.getElementById('detail-keywords').textContent = (p.keywords || []).join(' · ');
-    document.getElementById('detail-description').textContent = p.description || '';
-    document.getElementById('detail-card').style.setProperty('--card-accent', p.color || '#27A694');
-    document.getElementById('detail-counter').textContent = `${currentIndex + 1} / ${projects.length}`;
-  }
-
-  function selectProject(index) {
-    if (index < 0 || index >= projects.length) return;
-    currentIndex = index;
-
-    updateActiveCard();
-    updateDetailView();
-
-    if (ws && ws.readyState === 1) {
-      ws.send(JSON.stringify({
-        type: 'navigate',
-        direction: 'goto',
-        index,
-        total: projects.length
-      }));
-    }
-  }
-
-  function setMode(mode) {
-    currentMode = mode;
-    document.body.classList.toggle('detail-mode', mode === 'detail');
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
-  }
-
-  // Mode toggle
-  document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => setMode(btn.dataset.mode));
-  });
-
-  // Detail nav buttons
-  document.getElementById('prev-btn').addEventListener('click', () => {
-    if (currentIndex > 0) selectProject(currentIndex - 1);
-  });
-
-  document.getElementById('next-btn').addEventListener('click', () => {
-    if (currentIndex < projects.length - 1) selectProject(currentIndex + 1);
-  });
-
-  document.getElementById('back-btn').addEventListener('click', () => {
-    setMode('overview');
-  });
-
-  // WebSocket
-  function connectWS() {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${location.host}`;
-
-    try {
-      ws = new WebSocket(wsUrl);
-    } catch(e) {
-      updateConnBadge('disconnected', 'Error');
-      return;
-    }
-
-    ws.addEventListener('open', () => {
-      updateConnBadge('connected', 'Live');
-      ws.send(JSON.stringify({ type: 'register', role: 'ipad' }));
-      clearTimeout(wsRetryTimer);
-    });
-
-    ws.addEventListener('message', (evt) => {
+    async function loadProjects() {
       try {
-        const msg = JSON.parse(evt.data);
-        if (msg.type === 'state' && msg.currentProject !== currentIndex) {
-          currentIndex = msg.currentProject;
-          updateActiveCard();
-          updateDetailView();
-        }
-      } catch(e) {}
+        const r = await fetch('/projects.json');
+        const data = await r.json();
+        assignments = data.assignments || [];
+      } catch (e) {
+        assignments = [
+          { name: 'Demo Assignment', year: '1st year', keywords: ['demo'], description: 'Demo beschrijving.', students: [] }
+        ];
+      }
+      buildGrid();
+      if (assignments.length > 0 && currentIndex === -1) {
+        currentIndex = 0;
+        updateDetailView();
+      }
+    }
+
+    function buildGrid() {
+      const grid = document.getElementById('projects-grid');
+      grid.innerHTML = '';
+
+      assignments.forEach((a, i) => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+
+        const keywords = (a.keywords || []).join(' · ');
+        card.innerHTML = `
+          <div class="project-card-title">${a.name || ''}</div>
+          <div class="project-card-keywords">${keywords}</div>
+        `;
+
+        card.addEventListener('click', () => selectProject(i, true));
+        grid.appendChild(card);
+      });
+
+      updateActiveCard();
+    }
+
+    function updateActiveCard() {
+      document.querySelectorAll('.project-card').forEach((card, i) => {
+        card.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    function updateDetailView() {
+      if (currentIndex < 0 || currentIndex >= assignments.length) return;
+      const a = assignments[currentIndex];
+
+      document.getElementById('detail-title').textContent = a.name || '—';
+      document.getElementById('detail-keywords').textContent = (a.keywords || []).join(' · ');
+      document.getElementById('detail-description').textContent = a.description || '';
+      document.getElementById('detail-year').textContent = a.year || '';
+    }
+
+    function selectProject(index, switchToDetail = false) {
+      if (index < 0 || index >= assignments.length) return;
+      currentIndex = index;
+
+      updateActiveCard();
+      updateDetailView();
+
+      // Switch to detail mode if requested (e.g., when clicking a card)
+      if (switchToDetail && currentMode !== 'detail') {
+        setMode('detail');
+      }
+
+      // Send assignment to server (server calculates studentIndex for each display)
+      if (ws && ws.readyState === 1) {
+        const assignment = assignments[index];
+        ws.send(JSON.stringify({
+          type: 'navigate',
+          direction: 'goto',
+          assignmentIndex: index,
+          assignment: {
+            name: assignment.name,
+            year: assignment.year,
+            students: assignment.students || []
+          }
+        }));
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.body.classList.toggle('detail-mode', mode === 'detail');
+      document.getElementById('mode-btn').textContent = mode === 'detail' ? 'Overzicht' : 'Detail';
+    }
+
+    // Mode toggle
+    document.getElementById('mode-btn').addEventListener('click', () => {
+      setMode(currentMode === 'detail' ? 'overview' : 'detail');
     });
 
-    ws.addEventListener('close', () => {
-      updateConnBadge('disconnected', 'Offline');
-      wsRetryTimer = setTimeout(connectWS, 3000);
+    // Nav buttons (infinite loop)
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      stopAutoplay();
+      const prev = currentIndex > 0 ? currentIndex - 1 : assignments.length - 1;
+      selectProject(prev);
     });
 
-    ws.addEventListener('error', () => ws.close());
-  }
+    document.getElementById('next-btn').addEventListener('click', () => {
+      stopAutoplay();
+      const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
+      selectProject(next);
+    });
 
-  function updateConnBadge(state, label) {
-    const badge = document.getElementById('connection-badge');
-    document.getElementById('conn-label').textContent = label.toUpperCase();
-    badge.className = state;
-  }
+    // Autoplay functions (controlled by master display video timing)
+    function startAutoplay() {
+      autoplayActive = true;
+      document.getElementById('autoplay-btn').classList.add('active');
+    }
 
-  loadProjects().then(() => connectWS());
+    function stopAutoplay() {
+      autoplayActive = false;
+      document.getElementById('autoplay-btn').classList.remove('active');
+    }
 
-  // Debug on badge click
-  document.getElementById('connection-badge').addEventListener('click', () => {
-    const wsState = ws ? ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'][ws.readyState] : 'NULL';
-    alert(`WebSocket: ${wsState}\nProjects: ${projects.length}\nMode: ${currentMode}`);
-  });
-
-  // Wake lock
-  if ('wakeLock' in navigator) {
-    navigator.wakeLock.request('screen').catch(() => {});
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        navigator.wakeLock.request('screen').catch(() => {});
+    // Autoplay toggle
+    document.getElementById('autoplay-btn').addEventListener('click', () => {
+      if (autoplayActive) {
+        stopAutoplay();
+      } else {
+        startAutoplay();
       }
     });
-  }
 
-  // Service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw-ipad.js').catch(() => {});
-  }
-</script>
+    // WebSocket
+    function connectWS() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${location.host}`;
+
+      try {
+        ws = new WebSocket(wsUrl);
+      } catch (e) {
+        updateStatus('disconnected', 'Error');
+        return;
+      }
+
+      ws.addEventListener('open', () => {
+        updateStatus('connected', 'Live');
+        ws.send(JSON.stringify({ type: 'register', role: 'ipad' }));
+        clearTimeout(wsRetryTimer);
+      });
+
+      ws.addEventListener('message', (evt) => {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg.type === 'state' && msg.currentProject !== currentIndex) {
+            currentIndex = msg.currentProject;
+            updateActiveCard();
+            updateDetailView();
+          }
+          // Master display video ended - advance to next project
+          if (msg.type === 'videoEnded' && autoplayActive) {
+            const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
+            selectProject(next);
+          }
+        } catch (e) { }
+      });
+
+      ws.addEventListener('close', () => {
+        updateStatus('disconnected', 'Offline');
+        wsRetryTimer = setTimeout(connectWS, 3000);
+      });
+
+      ws.addEventListener('error', () => ws.close());
+    }
+
+    function updateStatus(state, label) {
+      const indicator = document.getElementById('status-indicator');
+      document.getElementById('status-label').textContent = label;
+      indicator.className = 'status-indicator ' + state;
+    }
+
+    loadProjects().then(() => connectWS());
+
+    // Wake lock
+    if ('wakeLock' in navigator) {
+      navigator.wakeLock.request('screen').catch(() => { });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          navigator.wakeLock.request('screen').catch(() => { });
+        }
+      });
+    }
+
+    // Service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw-ipad.js').catch(() => { });
+    }
+  </script>
 </body>
+
 </html>
