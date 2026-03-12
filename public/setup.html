@@ -3,60 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/setup.css">
   <title>Setup</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #000000;
-      color: #ffffff;
-      min-height: 100vh;
-      padding: 40px;
-    }
-    h1 { font-size: 24px; margin-bottom: 32px; }
-    .cards { display: flex; gap: 24px; flex-wrap: wrap; }
-    .card {
-      background: #111111;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 12px;
-      padding: 32px;
-      text-align: center;
-    }
-    .card h2 { font-size: 18px; margin-bottom: 16px; }
-    .card img { display: block; margin: 0 auto 16px; width: 200px; height: 200px; background: #222; border-radius: 8px; }
-    .card code {
-      display: block;
-      background: rgba(255,255,255,0.1);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      word-break: break-all;
-      margin-bottom: 12px;
-      color: rgba(255,255,255,0.7);
-    }
-    .card a {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .card a:hover {
-      background: rgba(255,255,255,0.8);
-    }
-  </style>
 </head>
 <body>
   <h1>Scan QR code om te verbinden</h1>
   <div class="cards">
     <div class="card">
-      <h2>iPad Controller</h2>
-      <img id="qr-ipad" alt="QR iPad">
-      <code id="url-ipad">Laden...</code>
-      <a id="link-ipad" href="#" target="_blank">Open</a>
+      <h2>Controller</h2>
+      <img id="qr-controller" alt="QR Controller">
+      <code id="url-controller">Laden...</code>
+      <a id="link-controller" href="#" target="_blank">Open</a>
     </div>
     <div class="card">
       <h2>Display 1</h2>
@@ -78,26 +35,6 @@
     </div>
   </div>
 
-  <script>
-    fetch('/api/ip')
-      .then(r => r.json())
-      .then(data => {
-        const base = `http://${data.ip}:${data.port}`;
-        const ipadUrl = `${base}/ipad.html`;
-
-        document.getElementById('url-ipad').textContent = ipadUrl;
-        document.getElementById('qr-ipad').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ipadUrl)}`;
-        document.getElementById('link-ipad').href = ipadUrl;
-
-        // 3 displays with different offsets, Display 1 is master
-        for (let i = 1; i <= 3; i++) {
-          const masterParam = i === 1 ? '&master=true' : '';
-          const displayUrl = `${base}/display.html?offset=${i - 1}${masterParam}`;
-          document.getElementById(`url-display-${i}`).textContent = displayUrl;
-          document.getElementById(`qr-display-${i}`).src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(displayUrl)}`;
-          document.getElementById(`link-display-${i}`).href = displayUrl;
-        }
-      });
-  </script>
+  <script src="js/setup.js"></script>
 </body>
 </html>
