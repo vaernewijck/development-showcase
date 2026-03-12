@@ -3,7 +3,6 @@ let currentIndex = -1;
 let currentMode = 'overview';
 let ws = null;
 let wsRetryTimer = null;
-let autoplayActive = false;
 let videoEndedCooldown = false;
 const VIDEO_ENDED_COOLDOWN_MS = 2000; // Prevent rapid-fire advances
 
@@ -93,16 +92,6 @@ function setMode(mode) {
   document.getElementById('mode-btn').textContent = mode === 'detail' ? 'Overzicht' : 'Detail';
 }
 
-function startAutoplay() {
-  autoplayActive = true;
-  document.getElementById('autoplay-btn').classList.add('active');
-}
-
-function stopAutoplay() {
-  autoplayActive = false;
-  document.getElementById('autoplay-btn').classList.remove('active');
-}
-
 function connectWS() {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${location.host}`;
@@ -129,8 +118,8 @@ function connectWS() {
         updateDetailView();
       }
       if (msg.type === 'videoEnded') {
-        console.log('Received videoEnded, autoplayActive:', autoplayActive, 'cooldown:', videoEndedCooldown);
-        if (autoplayActive && !videoEndedCooldown && assignments.length > 0) {
+        console.log('Received videoEnded, cooldown:', videoEndedCooldown);
+        if (!videoEndedCooldown && assignments.length > 0) {
           videoEndedCooldown = true;
           setTimeout(() => { videoEndedCooldown = false; }, VIDEO_ENDED_COOLDOWN_MS);
           const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
@@ -162,23 +151,13 @@ document.getElementById('mode-btn').addEventListener('click', () => {
 });
 
 document.getElementById('prev-btn').addEventListener('click', () => {
-  stopAutoplay();
   const prev = currentIndex > 0 ? currentIndex - 1 : assignments.length - 1;
   selectProject(prev);
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
-  stopAutoplay();
   const next = currentIndex < assignments.length - 1 ? currentIndex + 1 : 0;
   selectProject(next);
-});
-
-document.getElementById('autoplay-btn').addEventListener('click', () => {
-  if (autoplayActive) {
-    stopAutoplay();
-  } else {
-    startAutoplay();
-  }
 });
 
 // Wake lock
