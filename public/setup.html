@@ -8,41 +8,44 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f5;
+      background: #000000;
+      color: #ffffff;
       min-height: 100vh;
       padding: 40px;
     }
     h1 { font-size: 24px; margin-bottom: 32px; }
     .cards { display: flex; gap: 24px; flex-wrap: wrap; }
     .card {
-      background: white;
+      background: #111111;
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 12px;
       padding: 32px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .card h2 { font-size: 18px; margin-bottom: 16px; }
-    .card img { display: block; margin: 0 auto 16px; width: 200px; height: 200px; background: #eee; }
+    .card img { display: block; margin: 0 auto 16px; width: 200px; height: 200px; background: #222; border-radius: 8px; }
     .card code {
       display: block;
-      background: #f0f0f0;
+      background: rgba(255,255,255,0.1);
       padding: 8px 12px;
       border-radius: 6px;
       font-size: 14px;
       word-break: break-all;
       margin-bottom: 12px;
+      color: rgba(255,255,255,0.7);
     }
     .card a {
       display: inline-block;
-      background: #007AFF;
-      color: white;
+      background: #ffffff;
+      color: #000000;
       padding: 8px 16px;
       border-radius: 6px;
       text-decoration: none;
       font-size: 14px;
+      font-weight: 600;
     }
     .card a:hover {
-      background: #0056b3;
+      background: rgba(255,255,255,0.8);
     }
   </style>
 </head>
@@ -56,10 +59,22 @@
       <a id="link-ipad" href="#" target="_blank">Open</a>
     </div>
     <div class="card">
-      <h2>Display</h2>
-      <img id="qr-display" alt="QR Display">
-      <code id="url-display">Laden...</code>
-      <a id="link-display" href="#" target="_blank">Open</a>
+      <h2>Display 1</h2>
+      <img id="qr-display-1" alt="QR Display 1">
+      <code id="url-display-1">Laden...</code>
+      <a id="link-display-1" href="#" target="_blank">Open</a>
+    </div>
+    <div class="card">
+      <h2>Display 2</h2>
+      <img id="qr-display-2" alt="QR Display 2">
+      <code id="url-display-2">Laden...</code>
+      <a id="link-display-2" href="#" target="_blank">Open</a>
+    </div>
+    <div class="card">
+      <h2>Display 3</h2>
+      <img id="qr-display-3" alt="QR Display 3">
+      <code id="url-display-3">Laden...</code>
+      <a id="link-display-3" href="#" target="_blank">Open</a>
     </div>
   </div>
 
@@ -69,16 +84,19 @@
       .then(data => {
         const base = `http://${data.ip}:${data.port}`;
         const ipadUrl = `${base}/ipad.html`;
-        const displayUrl = `${base}/display.html`;
 
         document.getElementById('url-ipad').textContent = ipadUrl;
-        document.getElementById('url-display').textContent = displayUrl;
-
         document.getElementById('qr-ipad').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ipadUrl)}`;
-        document.getElementById('qr-display').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(displayUrl)}`;
-
         document.getElementById('link-ipad').href = ipadUrl;
-        document.getElementById('link-display').href = displayUrl;
+
+        // 3 displays with different offsets, Display 1 is master
+        for (let i = 1; i <= 3; i++) {
+          const masterParam = i === 1 ? '&master=true' : '';
+          const displayUrl = `${base}/display.html?offset=${i - 1}${masterParam}`;
+          document.getElementById(`url-display-${i}`).textContent = displayUrl;
+          document.getElementById(`qr-display-${i}`).src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(displayUrl)}`;
+          document.getElementById(`link-display-${i}`).href = displayUrl;
+        }
       });
   </script>
 </body>
