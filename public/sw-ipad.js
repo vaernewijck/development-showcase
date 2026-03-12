@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projecten-v1';
+const CACHE_NAME = 'showcase-v1';
 const ASSETS = [
   '/ipad.html',
   '/projects.json',
