@@ -3,7 +3,7 @@ cd "$(dirname "$0")"
 
 echo ""
 echo "═══════════════════════════════════════════════════════════"
-echo "  Development Showcase - Setup"
+echo "  Development Showcase"
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
@@ -30,9 +30,15 @@ echo "Server starten..."
 echo "Druk Ctrl+C om te stoppen"
 echo ""
 
-# Open setup in Chrome
-sleep 1
-open -a "Google Chrome" "http://localhost:3000/setup.html"
+# Start server in background, wait for it to be ready, then open browser
+node server.js &
+SERVER_PID=$!
 
-# Start server
-node server.js
+# Wait for server to start
+sleep 2
+
+# Open setup in default browser
+open "http://localhost:3000/setup.html"
+
+# Wait for server process
+wait $SERVER_PID

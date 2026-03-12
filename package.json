@@ -1,7 +1,7 @@
 {
-  "name": "pwa-display-controller",
+  "name": "development-showcase",
   "version": "1.0.0",
-  "description": "Two-screen PWA: display + iPad controller",
+  "description": "Multi-display video showcase for Devine student projects",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
