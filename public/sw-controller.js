@@ -1,9 +1,11 @@
-const CACHE_NAME = 'showcase-v1';
+const CACHE_NAME = 'showcase-v2';
 const ASSETS = [
-  '/ipad.html',
+  '/controller.html',
   '/projects.json',
-  '/manifest-ipad.json',
-  '/icon.svg'
+  '/manifest-controller.json',
+  '/assets/icon.svg',
+  '/css/controller.css',
+  '/js/controller.js'
 ];
 
 // Install - cache core assets

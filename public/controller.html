@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Controller">
+  <link rel="manifest" href="manifest-controller.json">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="stylesheet" href="css/controller.css">
+  <title>Showcase Controller</title>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">
+        <img src="assets/logo.png" alt="Devine">
+      </div>
+    </header>
+
+    <div id="main">
+      <div id="projects-grid"></div>
+      <div id="detail-view">
+        <div class="detail-content">
+          <div class="detail-title" id="detail-title">—</div>
+          <div class="detail-keywords" id="detail-keywords"></div>
+          <div class="detail-description" id="detail-description"></div>
+          <div class="detail-year" id="detail-year"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer id="app-footer">
+      <div class="footer-left">
+        <button class="mode-btn" id="mode-btn">Detail</button>
+      </div>
+      <div class="footer-center">
+        <button class="nav-btn" id="prev-btn">
+          <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button class="nav-btn" id="next-btn">
+          <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+        </button>
+      </div>
+      <div class="footer-right">
+        <button id="autoplay-btn" class="autoplay-toggle">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Auto
+        </button>
+        <div class="status-indicator" id="status-indicator">
+          <div class="status-dot"></div>
+          <span id="status-label">Offline</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/controller.js"></script>
+</body>
+</html>

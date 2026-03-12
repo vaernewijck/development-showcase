@@ -212,9 +212,9 @@ wss.on('connection', (ws) => {
             (state.assignmentVisitCount[assignmentIndex] || 0) + 1;
         }
 
-        // Notify iPads of current project (for sync)
+        // Notify controllers of current project (for sync)
         for (const client of clients) {
-          if (client.role === 'ipad' && client.readyState === 1) {
+          if (client.role === 'controller' && client.readyState === 1) {
             client.send(JSON.stringify({
               type: 'state',
               currentProject: assignmentIndex
@@ -223,17 +223,17 @@ wss.on('connection', (ws) => {
         }
       }
 
-      // Forward videoEnded from master display to iPad controllers
+      // Forward videoEnded from master display to controller controllers
       if (msg.type === 'videoEnded') {
         console.log('Received videoEnded from display');
-        let iPadCount = 0;
+        let controllerCount = 0;
         for (const client of clients) {
-          if (client.role === 'ipad' && client.readyState === 1) {
+          if (client.role === 'controller' && client.readyState === 1) {
             client.send(JSON.stringify({ type: 'videoEnded' }));
-            iPadCount++;
+            controllerCount++;
           }
         }
-        console.log(`Forwarded videoEnded to ${iPadCount} iPad(s)`);
+        console.log(`Forwarded videoEnded to ${controllerCount} controller(s)`);
       }
     } catch (e) {
       console.error('Parse error:', e.message);
