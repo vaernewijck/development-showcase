@@ -87,6 +87,9 @@ const server = http.createServer((req, res) => {
 
   // Route to correct folder
   let filePath;
+  const publicBase = path.join(__dirname, 'public');
+  const dataBase = path.join(__dirname, 'data');
+
   if (urlPath === '/') {
     filePath = path.join(__dirname, 'public', 'display.html');
   } else if (urlPath === '/projects.json') {
@@ -95,6 +98,15 @@ const server = http.createServer((req, res) => {
     filePath = path.join(__dirname, 'data', urlPath);
   } else {
     filePath = path.join(__dirname, 'public', urlPath);
+  }
+
+  // Prevent path traversal: resolved path must stay within its allowed base
+  const resolvedPath = path.resolve(filePath);
+  const allowedBase = (urlPath === '/projects.json' || urlPath.startsWith('/videos/')) ? dataBase : publicBase;
+  if (!resolvedPath.startsWith(allowedBase + path.sep) && resolvedPath !== allowedBase) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
   }
 
   const ext = path.extname(filePath).toLowerCase();
@@ -114,8 +126,17 @@ const server = http.createServer((req, res) => {
       const parts = range.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (isNaN(start) || isNaN(end) || start < 0 || end >= fileSize || start > end) {
+        res.writeHead(416, { 'Content-Range': `bytes */${fileSize}` });
+        res.end();
+        return;
+      }
+
       const chunksize = end - start + 1;
       const file = fs.createReadStream(filePath, { start, end });
+      file.on('error', (err) => { console.error('Stream error:', err); if (!res.headersSent) res.destroy(); });
+      res.on('close', () => file.destroy());
       res.writeHead(206, {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
@@ -131,7 +152,10 @@ const server = http.createServer((req, res) => {
       'Content-Type': MIME[ext],
       'Accept-Ranges': 'bytes',
     });
-    fs.createReadStream(filePath).pipe(res);
+    const fullStream = fs.createReadStream(filePath);
+    fullStream.on('error', (err) => { console.error('Stream error:', err); if (!res.headersSent) res.destroy(); });
+    res.on('close', () => fullStream.destroy());
+    fullStream.pipe(res);
     return;
   }
 
@@ -257,7 +281,9 @@ wss.on('connection', (ws) => {
       }
 
       if (msg.type === 'navigate' && msg.direction === 'goto') {
-        const assignmentIndex = msg.assignmentIndex || 0;
+        const assignmentIndex = Number.isInteger(msg.assignmentIndex) && msg.assignmentIndex >= 0
+          ? msg.assignmentIndex
+          : 0;
         const assignment = msg.assignment || null;
 
         state.currentProject = assignmentIndex;
