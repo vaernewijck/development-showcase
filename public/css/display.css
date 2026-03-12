@@ -118,14 +118,7 @@ html, body {
 }
 
 #counter {
-  position: fixed;
-  top: 40px;
-  right: 56px;
-  z-index: 4;
-  font-weight: 400;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.35);
+  display: none;
 }
 
 #conn {
