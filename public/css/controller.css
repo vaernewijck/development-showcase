@@ -139,10 +139,9 @@ header {
 }
 
 .detail-description {
-  font-size: clamp(18px, 3.5vw, 32px);
+  font-size: clamp(18px, 4vw, 42px);
   line-height: 1.5;
-  color: rgba(255,255,255,0.8);
-  max-width: 800px;
+  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 32px;
 }
 
