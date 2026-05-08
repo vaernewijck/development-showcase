@@ -149,6 +149,20 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 const clients = new Set();
 
+// Heartbeat: detect half-open WebSockets (sleep/wake, network loss)
+const HEARTBEAT_INTERVAL_MS = 30_000;
+const heartbeatInterval = setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) {
+      console.log('Terminating dead WebSocket');
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, HEARTBEAT_INTERVAL_MS);
+wss.on('close', () => clearInterval(heartbeatInterval));
+
 function broadcastAll(data) {
   const msg = JSON.stringify(data);
   for (const client of clients) {
@@ -199,6 +213,8 @@ function sendToDisplays(assignment, assignmentIndex) {
 
 wss.on('connection', (ws) => {
   clients.add(ws);
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
   console.log(`Client connected. Total: ${clients.size}`);
 
   ws.on('message', (raw) => {
