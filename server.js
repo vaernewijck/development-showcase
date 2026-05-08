@@ -56,7 +56,6 @@ function getNextVideoUrl(currentAssignmentIndex, displayOffset) {
 
 // Track displays with their offset and master status
 const displays = new Map(); // ws -> { offset: number, isMaster: boolean }
-let masterDisplay = null; // Track the single master display
 let videoEndedCooldown = false;
 const VIDEO_ENDED_COOLDOWN_MS = 2000;
 
@@ -229,14 +228,7 @@ wss.on('connection', (ws) => {
         if (msg.role === 'display' && typeof msg.offset === 'number') {
           const isMaster = msg.isMaster || false;
           displays.set(ws, { offset: msg.offset, isMaster: isMaster });
-
-          // Track the master display (first one wins)
-          if (isMaster && !masterDisplay) {
-            masterDisplay = ws;
-            console.log(`Master display registered with offset: ${msg.offset}`);
-          } else {
-            console.log(`Display registered with offset: ${msg.offset}`);
-          }
+          console.log(`Display registered with offset: ${msg.offset}${isMaster ? ' (master)' : ''}`);
 
           // Send current state to this display
           if (state.assignment) {
@@ -301,8 +293,9 @@ wss.on('connection', (ws) => {
 
       // Forward videoEnded from master display to controllers (with debouncing)
       if (msg.type === 'videoEnded') {
-        // Only accept from the registered master display
-        if (ws !== masterDisplay) {
+        // Only accept from a display registered as master
+        const info = displays.get(ws);
+        if (!info || !info.isMaster) {
           console.log('Ignoring videoEnded from non-master display');
           return;
         }
@@ -334,22 +327,6 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     clients.delete(ws);
     displays.delete(ws);
-
-    // Clear master if it disconnected
-    if (ws === masterDisplay) {
-      masterDisplay = null;
-      console.log('Master display disconnected');
-
-      // Promote another master if available
-      for (const [displayWs, info] of displays) {
-        if (info.isMaster && displayWs.readyState === 1) {
-          masterDisplay = displayWs;
-          console.log('Promoted new master display');
-          break;
-        }
-      }
-    }
-
     console.log(`Client disconnected. Total: ${clients.size}`);
   });
 });
