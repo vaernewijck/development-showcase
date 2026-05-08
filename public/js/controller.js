@@ -3,6 +3,7 @@ let currentIndex = -1;
 let currentMode = 'overview';
 let ws = null;
 let wsRetryTimer = null;
+let wsGeneration = 0;
 let videoEndedCooldown = false;
 const VIDEO_ENDED_COOLDOWN_MS = 2000; // Prevent rapid-fire advances
 
@@ -93,6 +94,8 @@ function setMode(mode) {
 }
 
 function connectWS() {
+  const myGen = ++wsGeneration;
+  clearTimeout(wsRetryTimer);
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${location.host}`;
 
@@ -104,12 +107,14 @@ function connectWS() {
   }
 
   ws.addEventListener('open', () => {
+    if (myGen !== wsGeneration) return;
     updateStatus('connected', 'Live');
     ws.send(JSON.stringify({ type: 'register', role: 'controller' }));
     clearTimeout(wsRetryTimer);
   });
 
   ws.addEventListener('message', (evt) => {
+    if (myGen !== wsGeneration) return;
     try {
       const msg = JSON.parse(evt.data);
       if (msg.type === 'state' && msg.currentProject !== currentIndex) {
@@ -132,11 +137,16 @@ function connectWS() {
   });
 
   ws.addEventListener('close', () => {
+    if (myGen !== wsGeneration) return;
     updateStatus('disconnected', 'Offline');
     wsRetryTimer = setTimeout(connectWS, 3000);
   });
 
-  ws.addEventListener('error', () => ws.close());
+  ws.addEventListener('error', () => { try { ws.close(); } catch(_) {} });
+}
+
+function ensureConnected() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) connectWS();
 }
 
 function updateStatus(state, label) {
@@ -160,15 +170,19 @@ document.getElementById('next-btn').addEventListener('click', () => {
   selectProject(next);
 });
 
-// Wake lock
-if ('wakeLock' in navigator) {
+// Wake lock + WebSocket recovery on visibility/online
+function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
   navigator.wakeLock.request('screen').catch(() => {});
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      navigator.wakeLock.request('screen').catch(() => {});
-    }
-  });
 }
+requestWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    requestWakeLock();
+    ensureConnected();
+  }
+});
+window.addEventListener('online', ensureConnected);
 
 // Service worker
 if ('serviceWorker' in navigator) {

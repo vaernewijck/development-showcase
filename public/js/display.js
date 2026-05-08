@@ -6,6 +6,7 @@ let currentVideo = null;
 let activeLayer = 'a';
 let ws = null;
 let wsRetryTimer = null;
+let wsGeneration = 0;
 let videoFailureTimer = null;
 const VIDEO_FAILURE_TIMEOUT_MS = 15000; // Fallback if video fails to load/play
 
@@ -252,10 +253,13 @@ function loadMedia(src, isDuplicate = false) {
 }
 
 function connectWS() {
+  const myGen = ++wsGeneration;
+  clearTimeout(wsRetryTimer);
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${protocol}//${location.host}`);
 
   ws.addEventListener('open', () => {
+    if (myGen !== wsGeneration) return;
     conn.textContent = 'Verbonden';
     conn.className = 'connected';
     ws.send(JSON.stringify({ type: 'register', role: 'display', offset: displayOffset, isMaster: isMaster }));
@@ -264,6 +268,7 @@ function connectWS() {
   });
 
   ws.addEventListener('message', (evt) => {
+    if (myGen !== wsGeneration) return;
     try {
       const msg = JSON.parse(evt.data);
       if (msg.type === 'state' && msg.assignment) {
@@ -282,25 +287,33 @@ function connectWS() {
   });
 
   ws.addEventListener('close', () => {
+    if (myGen !== wsGeneration) return;
     conn.textContent = 'Verbinding verbroken';
     conn.className = 'disconnected';
     conn.classList.remove('hidden');
     wsRetryTimer = setTimeout(connectWS, 3000);
   });
 
-  ws.addEventListener('error', () => ws.close());
+  ws.addEventListener('error', () => { try { ws.close(); } catch(_) {} });
 }
 
-// Wake lock
-if ('wakeLock' in navigator) {
-  async function requestWakeLock() {
-    try { await navigator.wakeLock.request('screen'); } catch(e) {}
-  }
-  requestWakeLock();
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') requestWakeLock();
-  });
+function ensureConnected() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) connectWS();
 }
+
+// Wake lock + WebSocket recovery on visibility/online
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try { await navigator.wakeLock.request('screen'); } catch(e) {}
+}
+requestWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    requestWakeLock();
+    ensureConnected();
+  }
+});
+window.addEventListener('online', ensureConnected);
 
 // Initialize
 loadInitialData().then(() => connectWS());
