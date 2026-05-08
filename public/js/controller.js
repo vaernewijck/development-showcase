@@ -4,6 +4,7 @@ let currentMode = 'overview';
 let ws = null;
 let wsRetryTimer = null;
 let wsGeneration = 0;
+let isFirstConnect = true;
 let videoEndedCooldown = false;
 const VIDEO_ENDED_COOLDOWN_MS = 2000; // Prevent rapid-fire advances
 
@@ -110,6 +111,20 @@ function connectWS() {
     if (myGen !== wsGeneration) return;
     updateStatus('connected', 'Live');
     ws.send(JSON.stringify({ type: 'register', role: 'controller' }));
+    // Re-push current selection so the server (and displays) re-sync
+    // after a server restart or our own connection loss. Skip on first
+    // connect — the controller boots with currentIndex=0 by default and
+    // we don't want a refresh to force every display back to project 0.
+    if (!isFirstConnect && currentIndex >= 0 && assignments[currentIndex]) {
+      const a = assignments[currentIndex];
+      ws.send(JSON.stringify({
+        type: 'navigate',
+        direction: 'goto',
+        assignmentIndex: currentIndex,
+        assignment: { name: a.name, year: a.year, students: a.students || [] }
+      }));
+    }
+    isFirstConnect = false;
     clearTimeout(wsRetryTimer);
   });
 
